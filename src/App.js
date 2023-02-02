@@ -13,6 +13,32 @@ export default function Board(value, setValue) {
 	 * reminder: inner `handleClick` function has access to outer `Board` function.
 	 * - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures
 	 */
+	
+	function handleClick() {
+		// `slice()` Array method creates a copy of `squares` array named `nextSquares`
+		const nextSquares = squares.slice();
+		console.log(`nextSquares = ${nextSquares}`);
+		// add `X` to the first (`[0]` index) square
+		nextSquares[0] = "X";
+		// tell React the state of the component has changed
+		setSquares(nextSquares);
+	}
+
+import React, { useState } from "react";
+
+// const [value, setValue] = useState(null);
+// function handleClick() {
+// 	setValue("X");
+// }
+
+// maintains which squares are filled
+export default function Board(value, setValue) {
+	const [squares, setSquares] = useState(Array(9).fill(null)); // create an array with 9 elements and set each to `null`.
+
+	/*
+	 * reminder: inner `handleClick` function has access to outer `Board` function.
+	 * - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures
+	 */
 
 	function handleClick(i) {
 		// `slice()` Array method creates a copy of `squares` array named `nextSquares`
@@ -41,9 +67,20 @@ export default function Board(value, setValue) {
 				<Square value={squares[6]} />
 				<Square value={squares[7]} />
 				<Square value={squares[8]} />
+				<Square value={squares[6]} />
+				<Square value={squares[7]} />
+				<Square value={squares[8]} />
 			</div>
 		</React.Fragment>
 	);
+}
+
+function Square({ value, onSquareClick }) {
+	return (
+		<button className='square' onClick={onSquareClick}>
+			{value}
+		</button>
+	); // receive `value` prop from `Board` component
 }
 
 function Square({ value, onSquareClick }) {
