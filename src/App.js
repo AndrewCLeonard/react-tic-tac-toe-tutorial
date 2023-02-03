@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 
-// const [value, setValue] = useState(null);
-// function handleClick() {
-// 	setValue("X");
-// }
+// receive `value` prop (`X`, `O`, or `null`) from `Board` component. // Pass down `onSquareClick` fn from `Board` to `Square.`
+function Square({ value, onSquareClick }) {
+	return (
+		<button className='square' onClick={onSquareClick}>
+			{value} {/* receive `value` prop from `Board` component */}
+		</button>
+	);
+}
 
 // maintains which squares are filled
-export default function Board() {
-	const [xIsNext, setXIsNext] = useState(true);
-	const [squares, setSquares] = useState(Array(9).fill(null)); // create an array with 9 elements and set each to `null`.
-
+function Board({ xIsNext, squares, onPlay }) {
 	/*
 	 * reminder: inner `handleClick` function has access to outer `Board` function.
 	 * - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures
@@ -17,7 +18,7 @@ export default function Board() {
 
 	function handleClick(i) {
 		// check if square already has an "X" or "O"
-		if (squares[i]) {
+		if (squares[i] || calculateWinner(squares)) {
 			return;
 		}
 
@@ -28,17 +29,21 @@ export default function Board() {
 		} else {
 			nextSquares[i] = "O";
 		}
-		// tell React the state of the component has changed
-		setSquares(nextSquares);
-		// flip `xIsNext` boolean
-		setXIsNext(!xIsNext);
+		onPlay(nextSquares);
+	}
+
+	const winner = calculateWinner(squares);
+	let status;
+	if (winner) {
+		status = "Winner: " + winner;
+	} else {
+		status = "Next player: " + (xIsNext ? "X" : "O");
 	}
 
 	return (
 		<React.Fragment>
+			<div className='status'>{status}</div>
 			<div className='board-row'>
-				{/* `Board` component maintains which squares are filled. It passes prop down to each of the `Square` components it renders */}
-				{/* coding `handleClick(0) would call the function, which calls `setSquares` and re-renders the board, which calls `handleClick(0)`, creating an infinite loop*/}
 				<Square value={squares[0]} onSquareClick={() => handleClick(0)} />
 				<Square value={squares[1]} onSquareClick={() => handleClick(1)} />
 				<Square value={squares[2]} onSquareClick={() => handleClick(2)} />
@@ -54,6 +59,34 @@ export default function Board() {
 				<Square value={squares[8]} onSquareClick={() => handleClick(8)} />
 			</div>
 		</React.Fragment>
+	);
+}
+
+// `export default` tells `index.js` file to use `Game` component as top-level component (no longer the `Board` component)
+export default function Game() {
+	const [xIsNext, setXIsNext] = useState(true);
+	const [history, setHistory] = useState([Array(9).fill(null)]); // create an array with 9 elements and set each to `null`.
+	const currentSquares = history[history.length - 1];
+
+	function handlePlay(nextSquares) {
+		setHistory([...history, nextSquares]); // spread syntax = "enumerate all the items in history", which creates new array containing all items in `history`, followed by `nextSquares`
+		/*  if history is [[null,null,null], ["X",null,null]]
+		 * and nextSquares is ["X",null,"O"],
+		 * then the new [...history, nextSquares] array will be:
+		 * [[null,null,null], ["X",null,null], ["X",null,"O"]].
+		 */
+		setXIsNext(!xIsNext);
+	}
+
+	return (
+		<div className='game'>
+			<div className='game-board'>
+				<Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+			</div>
+			<div className='game-info'>
+				<ol>{/*TODO*/}</ol>
+			</div>
+		</div>
 	);
 }
 
@@ -75,13 +108,4 @@ function calculateWinner(squares) {
 		}
 	}
 	return null;
-}
-
-// receive `value` prop (`X`, `O`, or `null`) from `Board` component. // Pass down `onSquareClick` fn from `Board` to `Square.`
-function Square({ value, onSquareClick }) {
-	return (
-		<button className='square' onClick={onSquareClick}>
-			{value} {/* receive `value` prop from `Board` component */}
-		</button>
-	);
 }
